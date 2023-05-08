@@ -4,6 +4,7 @@ import { comparePassword, hashPassword } from "../helper/hashPassword";
 import { signJWT } from "../helper/JWT";
 import JWT from "jsonwebtoken";
 
+
 let ArrayRefreshToken: string[] = [];
 export const authController = {
   register: async (req: Request, res: Response) => {
@@ -12,16 +13,14 @@ export const authController = {
       // validations
       if (!name) return res.status(422).send({ name: "name is Required" });
       if (!email) return res.status(422).send({ email: "email is Required" });
-      if (!password)
-        return res.status(422).send({ password: "password is Required" });
+      if (!password) return res.status(422).send({ password: "password is Required" });
       if (!phone) return res.status(422).send({ phone: "phone is Required" });
       // if (!address)
       //   return res.status(422).send({ address: "address is Required" });
       // existing user ;
-      
+
       const exisitingUser = await userModel.findOne({ email });
-      if (exisitingUser)
-        return res.status(422).send({ email: "email đã tồn tại" });
+      if (exisitingUser) return res.status(422).send({ email: "email đã tồn tại" });
       const hash = await hashPassword(password);
       // save
       const user = await new userModel({
@@ -49,12 +48,12 @@ export const authController = {
 
   login: async (req: Request, res: Response) => {
     try {
-      const { email, password } = req.body;
-      if (!email || !password)
+      const { email } = req.body;
+      if (!email || !req.body.password)
         return res.status(403).send({ email: "Invalid email or password" });
       const user = await userModel.findOne({ email });
       if (!user) return res.status(422).send({ email: "Email không đúng" });
-      const matchPassword = await comparePassword(password, user.password);
+      const matchPassword = await comparePassword(req.body.password, user.password);
       if (!matchPassword)
         return res.status(422).send({ password: "mật khẩu không đúng" });
       // create accessToken
@@ -75,17 +74,12 @@ export const authController = {
         sameSite: "strict",
         path: "/",
       });
-
+      const {password, role ,...others}= user.toObject()
       return res.status(200).json({
         message: "login successfully",
 
         data: {
-          user: {
-            name: user.name,
-            email: user.email,
-            address: user.address,
-            phone: user.phone,
-          },
+          user: {...others},
           access_token: accessToken,
           refresh_token: refreshToken,
         },
