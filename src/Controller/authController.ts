@@ -8,16 +8,17 @@ let ArrayRefreshToken: string[] = [];
 export const authController = {
   register: async (req: Request, res: Response) => {
     try {
-      const { name, email, password, phone, address } = req.body;
+      const { name, email, password, phone } = req.body;
       // validations
       if (!name) return res.status(422).send({ name: "name is Required" });
       if (!email) return res.status(422).send({ email: "email is Required" });
       if (!password)
         return res.status(422).send({ password: "password is Required" });
       if (!phone) return res.status(422).send({ phone: "phone is Required" });
-      if (!address)
-        return res.status(422).send({ address: "address is Required" });
+      // if (!address)
+      //   return res.status(422).send({ address: "address is Required" });
       // existing user ;
+      
       const exisitingUser = await userModel.findOne({ email });
       if (exisitingUser)
         return res.status(422).send({ email: "email đã tồn tại" });
@@ -27,8 +28,8 @@ export const authController = {
         name,
         email,
         password: hash,
-        phone,
-        address,
+        phone
+        
       }).save();
       return res.status(200).send({
         message: "User Register Successfully",
