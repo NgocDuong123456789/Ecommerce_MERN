@@ -1,5 +1,6 @@
 import mongoose, { Schema, Model } from "mongoose";
 import bcrypt from 'bcrypt'
+import CryptoJS from 'crypto'
 export interface userDocument extends mongoose.Document {
   name: string;
   email: string;
@@ -14,6 +15,7 @@ export interface userDocument extends mongoose.Document {
   passwordResetToken: string;
   passwordResetExpries: string;
   wishlist: string[];
+  createPasswordChangeToken:()=>string
 }
 
 export interface cartType {
@@ -33,9 +35,9 @@ const userSchema: Schema<userDocument> = new mongoose.Schema(
     role: { type: Number, default: 0 },
     cart: { type: [Object], default: [] },
     isBlocked: { type: Boolean, default: false },
-    refreshToken: { Type: String },
+    refreshToken: { type: String },
     passwordChangedAt: { type: String },
-    passwordResetToken: { Type: String },
+    passwordResetToken: { type: String },
     passwordResetExpries: { type: String },
   },
   {
@@ -49,11 +51,19 @@ const userSchema: Schema<userDocument> = new mongoose.Schema(
     
 // })
 
-// userSchema.methods={
-//     isCorrectPassword:async function(password: string ){
-//         return await bcrypt.compare(password , this.password)
-//     }
-// }
+userSchema.methods={
+    // isCorrectPassword:async function(password: string ){
+    //     return await bcrypt.compare(password , this.password)
+    // }
+   
+
+    createPasswordChangeToken:function(){
+        const resetToken= CryptoJS.randomBytes(12).toString('hex')
+        this. passwordResetToken=CryptoJS.createHash('sha256').update(resetToken).digest('hex')
+        this.passwordResetExpries=Date.now()  + 15 *60 *1000 ;
+        return resetToken;
+    }
+}
 
 const userModel: Model<userDocument> = mongoose.model("user", userSchema);
 export default userModel;

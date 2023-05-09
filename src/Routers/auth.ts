@@ -7,9 +7,14 @@ const router= express.Router();
 router.post("/register",authController.register)
 router.post("/login",authController.login)
 router.post("/refresh_token", authController.refreshToken)
-router.post("/logout",authController.logout)
-
+router.post("/logout",requiredSignIn,authController.logout)
+router.get("/forgetpassword", authController.forgotPassword)
+router.put('/api/user/reset-password', authController.resetPassword)
 // test routes
-router.get('/test',requiredSignIn ,authController.test)
+router.get('/current',requiredSignIn ,authController.test)
+router.get('/alluser', [requiredSignIn, isAdmin],authController.getAllUser)
+router.delete('/:_id',[requiredSignIn, isAdmin],authController.deleteUser)
+router.put('/curent',requiredSignIn,authController.updateUser)
+router.put('/:_id',[requiredSignIn, isAdmin],authController.updateByAdmin)
 
 export default router;

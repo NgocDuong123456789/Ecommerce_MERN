@@ -6,7 +6,7 @@ interface AuthenticatedRequest extends Request {
   user?: any;
 }
 export const requiredSignIn = (
-  req: AuthenticatedRequest,
+  req:AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
@@ -32,30 +32,15 @@ export const requiredSignIn = (
             }
           }
         );
-    
-   
   } catch (err) {
     console.log(err);
   }
 };
 
-// admin access
-export const isAdmin = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  
-  try {
-    const user = await userModel.findById(req.user._id); 
-    console.log(user)
-    
-    if (user.role !== 1)
-      return res
-        .status(401)
-        .json({ success: false, message: "UnAuthorized Access" });
-    return next();
-  } catch (err) {
-    console.log(err);
-  }
-};
+
+export const isAdmin = (req:AuthenticatedRequest, res: Response,next: NextFunction)=>{
+  const {role}= req.user;
+  if(role !== 1) return res.status(401).json({success: false,message:'Require admin role'})
+  else next()
+}
+
