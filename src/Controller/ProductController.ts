@@ -122,7 +122,7 @@ export const productController = {
   },
   ratings: async (req: AuthenticatedRequest, res: Response) => {
     const { _id } = req.user;
-    console.log(_id);
+
     const { star, comment, pid } = req.body;
     if (!star || !pid) return res.status(402).json("Messing inputs");
     // trường hợp đã có người đánh giá rồi
@@ -130,7 +130,7 @@ export const productController = {
     const alreadlyRating = ratingProduct.ratings.some(
       (el) => el.postedBy.toString() === _id
     );
-    console.log(alreadlyRating);
+
     if (alreadlyRating) {
       // user đã đánh giá r
       // update start & comment
@@ -163,8 +163,14 @@ export const productController = {
         },
         { new: true }
       );
-      console.log(response);
     }
+    const updateCountProduct = await productModel.findById(pid);
+    const ratingCount = updateCountProduct.ratings.length;
+    const sumRatings = updateCountProduct.ratings.reduce((sum, prev) => {
+      return sum + prev.star;
+    }, 0);
+    updateCountProduct.totalRangtings = (sumRatings * 10) / ratingCount / 10;
+    await updateCountProduct.save();
     return res.status(200).json({
       success: true,
     });
