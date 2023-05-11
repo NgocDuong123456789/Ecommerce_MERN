@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
-import userModel from "../Models/user.model";
+
 // protected Routers token base
 interface AuthenticatedRequest extends Request {
   user?: any;
@@ -11,6 +11,7 @@ export const requiredSignIn = (
   next: NextFunction
 ) => {
   try {
+
     const authHeader = req.headers.authorization
     const accessToken = authHeader && authHeader.split(" ")[1];
    

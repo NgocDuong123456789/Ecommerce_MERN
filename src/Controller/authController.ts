@@ -64,7 +64,7 @@ export const authController = {
         return res.status(422).send({ password: "mật khẩu không đúng" });
       // create accessToken
       const accessToken = signJWT(
-        { _id: user._id , role:user.role},
+        { _id : user._id , role:user.role},
         process.env.JWT_ACCESS_TOKEN,
         { expiresIn: "1m" }
       );

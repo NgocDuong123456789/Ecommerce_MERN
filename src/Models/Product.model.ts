@@ -1,26 +1,25 @@
-import mongoose,{Schema,Model, Types} from "mongoose";
+import mongoose, { Schema, Model, Types } from "mongoose";
 
-interface rating{
-    star:number,
-    postedBy:string
+interface rating {
+  star: number;
+  postedBy: mongoose.Schema.Types.ObjectId;
+  comment: string;
 }
 export interface ProductDocument extends mongoose.Document {
-    title: string ,
-    slug: string ,
-    description: string ,
-    brand: string ,
-    price: number ,
-    category:  mongoose.Types.ObjectId,
-    quantity: Number,
-    sold:Number
-    images:string[]
-    color:string
-    ratings:rating[]
-    totalRangtings:number
-
-
+  title: string;
+  slug: string;
+  description: string;
+  brand: string;
+  price: number;
+  category: mongoose.Schema.Types.ObjectId;
+  quantity: Number;
+  sold: Number;
+  images: string[];
+  color: string;
+  ratings: rating[];
+  totalRangtings: number;
 }
-const productSchema:Schema< ProductDocument> = new mongoose.Schema(
+const productSchema: Schema<ProductDocument> = new mongoose.Schema(
   {
     title: {
       type: String,
@@ -47,7 +46,8 @@ const productSchema:Schema< ProductDocument> = new mongoose.Schema(
       required: true,
     },
     category: {
-      type: mongoose.Schema.Types.ObjectId,ref: "Category" 
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
     },
     quantity: {
       type: Number,
@@ -58,7 +58,7 @@ const productSchema:Schema< ProductDocument> = new mongoose.Schema(
       default: 0,
     },
     images: {
-      type:[String],
+      type: [String],
       default: [],
     },
     color: {
@@ -69,6 +69,7 @@ const productSchema:Schema< ProductDocument> = new mongoose.Schema(
       {
         star: { type: Number },
         postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        comment: { type: String },
       },
     ],
     totalRangtings: { type: Number, default: 0 },
@@ -79,5 +80,8 @@ const productSchema:Schema< ProductDocument> = new mongoose.Schema(
   }
 );
 
-const productModel:Model<ProductDocument> = mongoose.model("Products", productSchema);
-export default productModel
+const productModel: Model<ProductDocument> = mongoose.model(
+  "Products",
+  productSchema
+);
+export default productModel;
