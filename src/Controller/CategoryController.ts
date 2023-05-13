@@ -15,7 +15,7 @@ const CategoryController = {
       });
   },
   getCategory:async(req: Request, res: Response)=>{
-    const getAllCategory=await CategoryModel.find({}).select('title  _id')
+    const getAllCategory=await CategoryModel.find({})
     return res.status(200).json({
         success: getAllCategory ? true : false,
         getAllCategory: getAllCategory

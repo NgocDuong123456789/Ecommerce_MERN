@@ -175,4 +175,8 @@ export const productController = {
       success: true,
     });
   },
+
+  uploadImageProduct: async (req:Request, res:Response) => {
+    return res.json("ok")
+  }
 };

@@ -14,7 +14,7 @@ export interface ProductDocument extends mongoose.Document {
   category: mongoose.Schema.Types.ObjectId;
   quantity: Number;
   sold: Number;
-  images: string[];
+  images: [];
   color: string;
   ratings: rating[];
   totalRangtings: number;
@@ -58,7 +58,7 @@ const productSchema: Schema<ProductDocument> = new mongoose.Schema(
       default: 0,
     },
     images: {
-      type: [String],
+      type: [],
       default: [],
     },
     color: {
