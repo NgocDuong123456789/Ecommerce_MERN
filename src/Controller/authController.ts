@@ -3,8 +3,9 @@ import userModel from "../Models/user.model";
 import { comparePassword, hashPassword } from "../helper/hashPassword";
 import { signJWT } from "../helper/JWT";
 import JWT from "jsonwebtoken";
-import CryptoJS from 'crypto'
-import sendMail from '../helper/saveMail'
+import CryptoJS from "crypto";
+import productModel from "../Models/Product.model";
+import sendMail from "../helper/saveMail";
 interface AuthenticatedRequest extends Request {
   user?: any;
 }
@@ -64,7 +65,7 @@ export const authController = {
         return res.status(422).send({ password: "mật khẩu không đúng" });
       // create accessToken
       const accessToken = signJWT(
-        { _id : user._id , role:user.role},
+        { _id: user._id, role: user.role },
         process.env.JWT_ACCESS_TOKEN,
         { expiresIn: "1m" }
       );
@@ -78,7 +79,7 @@ export const authController = {
       // lưu refresh token vào database
       await userModel.findByIdAndUpdate(
         user._id,
-        { refresh_token},
+        { refresh_token },
         { new: true }
       ); // mặc định là false nếu không để thì nó sẽ trả về data trc khi update , để là true thì trả về data sau khi update
       res.cookie("refresh_token", refresh_token, {
@@ -86,7 +87,7 @@ export const authController = {
         sameSite: "strict",
         path: "/",
       });
-      const { password, role,refreshToken, ...userData } = user.toObject()
+      const { password, role, refreshToken, ...userData } = user.toObject();
       return res.status(200).json({
         message: "login successfully",
 
@@ -183,33 +184,39 @@ export const authController = {
     //  gửi mail
     // đoạn text muốn giửi
     const html = `Xin vui lòng click vào link dưới đây để  thay đổi mật khẩu của bạn.Link này sẽ hết hạn sau 15 phút kể từ bây giờ <a href=${process.env.URL_SERVER}/api/user/reset-password/${resetToken}>toang</a>`;
-    const data={
-      email: email as string ,
-      html
-    }
-    const rs =await sendMail(data)
+    const data = {
+      email: email as string,
+      html,
+    };
+    const rs = await sendMail(data);
     return res.status(200).json({
       success: true,
-      rs
-    })
+      rs,
+    });
   },
 
-  resetPassword: async(req: Request, res: Response) => {
-    const {token, password}= req.body
-    if(!password || !token) return res.status(403).json("không có password và token")
-    const passwordResetToken= CryptoJS.createHash('sha256').update(token).digest('hex')
-    const user= await userModel.findOne({passwordResetToken: passwordResetToken, passwordResetExpries:{$gt:Date.now()}})
-    if(!user) return res.status(402).json("invalid reset token")
+  resetPassword: async (req: Request, res: Response) => {
+    const { token, password } = req.body;
+    if (!password || !token)
+      return res.status(403).json("không có password và token");
+    const passwordResetToken = CryptoJS.createHash("sha256")
+      .update(token)
+      .digest("hex");
+    const user = await userModel.findOne({
+      passwordResetToken: passwordResetToken,
+      passwordResetExpries: { $gt: Date.now() },
+    });
+    if (!user) return res.status(402).json("invalid reset token");
     const hash = await hashPassword(password);
-    user.password=hash
-    user.passwordChangedAt=String(Date.now())
-    user.passwordResetToken= undefined;
-    user.passwordResetExpries= undefined;
+    user.password = hash;
+    user.passwordChangedAt = String(Date.now());
+    user.passwordResetToken = undefined;
+    user.passwordResetExpries = undefined;
     await user.save();
     return res.status(200).json({
       success: true,
-      message:"user update password successfully "
-    })
+      message: "user update password successfully ",
+    });
   },
 
   test: async (
@@ -226,47 +233,128 @@ export const authController = {
       console.log(err);
     }
   },
-  getAllUser:async(req: Request, res: Response) => {
-    const response= await  userModel.find({}).select("-password -role -refreshToken")
+  getAllUser: async (req: Request, res: Response) => {
+    const response = await userModel
+      .find({})
+      .select("-password -role -refreshToken");
     return res.status(200).json({
-      success:response ? true :false ,
-      user: response
-    })
+      success: response ? true : false,
+      user: response,
+    });
   },
-  deleteUser:async(req: Request, res: Response) => {
-    const {_id}= req.params
-    if(! _id) return res.json('Missing inputs')
-    const response= await  userModel.findByIdAndDelete(_id)
+  deleteUser: async (req: Request, res: Response) => {
+    const { _id } = req.params;
+    if (!_id) return res.json("Missing inputs");
+    const response = await userModel.findByIdAndDelete(_id);
     return res.status(200).json({
-      success:response ? true :false ,
-      message:'delete user successfully'
-
-    })
-
+      success: response ? true : false,
+      message: "delete user successfully",
+    });
   },
 
   updateUser: async (req: AuthenticatedRequest, res: Response) => {
-    const {_id}= req.user
-    if(!_id || Object.keys(req.body).length ===0 ) return res.json("Missing input")
-    const response = await userModel.findByIdAndUpdate(_id,req.body,{new: true}).select('-refreshToken -role -password')
+    const { _id } = req.user;
+    if (!_id || Object.keys(req.body).length === 0)
+      return res.json("Missing input");
+    const response = await userModel
+      .findByIdAndUpdate(_id, req.body, { new: true })
+      .select("-refreshToken -role -password");
     return res.status(200).json({
-      success:true, message:"update successfully user",
-      user:response
-    })
+      success: true,
+      message: "update successfully user",
+      user: response,
+    });
   },
 
-  updateByAdmin:async(req: Request, res: Response)=>{
-    const {_id}= req.params
-    if(!_id || Object.keys(req.body).length ===0 ) return res.json("Missing input")
-    const response = await userModel.findByIdAndUpdate(_id,req.body,{new: true}).select('-refreshToken -role -password')
+  updateByAdmin: async (req: Request, res: Response) => {
+    const { _id } = req.params;
+    if (!_id || Object.keys(req.body).length === 0)
+      return res.json("Missing input");
+    const response = await userModel
+      .findByIdAndUpdate(_id, req.body, { new: true })
+      .select("-refreshToken -role -password");
     return res.status(200).json({
-      success:true, message:"update successfully user",
-      user:response
-    })
-  }
+      success: true,
+      message: "update successfully user",
+      user: response,
+    });
+  },
+  updateAddressUser: async (req: AuthenticatedRequest, res: Response) => {
+    const { _id } = req.user;
+    if (!req.body.address) return res.json("Missing input");
+    const arrayUser = await userModel.findById(_id);
 
-  
+    if (arrayUser.address.includes(req.body.address as never))
+      return res.status(403).json("address đã tồn tại !");
+    const response = await userModel
+      .findByIdAndUpdate(
+        _id,
+        { $push: { address: req.body.address } },
+        { new: true }
+      )
+      .select("-refreshToken -role -password");
+    return res.status(200).json({
+      success: true,
+      message: "update successfully address user",
+      user: response,
+    });
+  },
 
+  addToCart: async (req: AuthenticatedRequest, res: Response) => {
+    const { _id } = req.user;
+    const { pid, quantity, color } = req.body;
+    if (!pid || !quantity || !color)
+      return res.status(403).json("missing inputs");
+    const cart = await userModel.findById(_id);
+    const readlyProduct = cart?.cart?.filter(
+      (el) => el?.product?.toString() === pid
+    );
+    const realy = readlyProduct.find((product) => product.color === color);
+    if (readlyProduct.length !== 0) {
+      if (realy) {
+        const response = await userModel.updateOne(
+          {
+            cart: {
+              $elemMatch: { product: pid, color: color },
+              // điều kiện này phải tương ứng trường có trong database thì mới update đ
+             },
+          },
+          {$set: {"cart.$.quantity": quantity,},
+          },
+          { new: true }
+        );
 
+        console.log(response);
 
+        return res.status(200).json({
+          success: response ? true : false,
+          addToCart: response ? response : "can not add to cart",
+        });
+      } else {
+        const response = await userModel.findByIdAndUpdate(
+          _id,
+          {
+            $push: { cart: { product: pid, quantity: quantity, color: color } },
+          },
+          { new: true }
+        );
+        console.log(2);
+        return res.status(200).json({
+          success: response ? true : false,
+          addToCart: response ? response : "can not add to cart",
+        });
+      }
+    } else {
+      const response = await userModel.findByIdAndUpdate(
+        _id,
+        { $push: { cart: { product: pid, quantity: quantity, color: color } } },
+        { new: true }
+      );
+      return res.status(200).json({
+        success: response ? true : false,
+        addToCart: response ? response : "can not add to cart",
+      });
+    }
+    // const response = await userModel.findByIdAndUpdate(_id,{$push:{cart:product}},{new: true})
+  },
 };

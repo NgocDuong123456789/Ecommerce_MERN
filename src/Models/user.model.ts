@@ -1,5 +1,5 @@
 import mongoose, { Schema, Model } from "mongoose";
-import bcrypt from 'bcrypt'
+
 import CryptoJS from 'crypto'
 export interface userDocument extends mongoose.Document {
   name: string;
@@ -8,7 +8,7 @@ export interface userDocument extends mongoose.Document {
   phone: string;
   role: number;
   cart: cartType[];
-  address: string[];
+  address: [];
   isBlocked: boolean;
   refreshToken: string;
   passwordChangedAt: string;
@@ -18,10 +18,10 @@ export interface userDocument extends mongoose.Document {
   createPasswordChangeToken:()=>string
 }
 
-export interface cartType {
-  name: { type: String };
-  price: { type: Number };
-  userId: { type: String };
+interface cartType{
+  product:{id:mongoose.Schema.Types.ObjectId,title: string , price:number};
+  color:string 
+  quantity:Number
 }
 
 const userSchema: Schema<userDocument> = new mongoose.Schema(
@@ -30,10 +30,14 @@ const userSchema: Schema<userDocument> = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     phone: { type: String, required: true },
-    address: [{ type: mongoose.Types.ObjectId, ref: "Address" }],
-    wishlist: [{ type: mongoose.Types.ObjectId, ref: "Product" }],// dánh sách yêu thích
+    address: {type:[], default:[]},
+    wishlist: [{ type: mongoose.Types.ObjectId, ref: "Products" }],// dánh sách yêu thích
     role: { type: Number, default: 0 },
-    cart: { type: [Object], default: [] },
+    cart:  [{
+      product:{id:{type:mongoose.Schema.Types.ObjectId , ref:"Products"},title:{type:String},price:{type:String}},
+      quantity:{type:Number},
+      color:{type:String},
+    }], 
     isBlocked: { type: Boolean, default: false },
     refreshToken: { type: String },
     passwordChangedAt: { type: String },
@@ -46,17 +50,10 @@ const userSchema: Schema<userDocument> = new mongoose.Schema(
   }
 );
 
-// userSchema.pre("save",async function(){
-//     const user= this as userDocument;
-    
-// })
+
 
 userSchema.methods={
-    // isCorrectPassword:async function(password: string ){
-    //     return await bcrypt.compare(password , this.password)
-    // }
    
-
     createPasswordChangeToken:function(){
         const resetToken= CryptoJS.randomBytes(12).toString('hex')
         this. passwordResetToken=CryptoJS.createHash('sha256').update(resetToken).digest('hex')

@@ -4,6 +4,9 @@ interface AuthenticatedRequest extends Request {
   user?: any;
 }
 
+interface fileRequest extends Request {
+  file?:any
+}
 const BlogController = {
   createNewBlog: async (req: Request, res: Response) => {
     const { title, description, category } = req.body;
@@ -152,6 +155,15 @@ const BlogController = {
       blog,
     });
   },
+  uploadImageBlog:async(req:fileRequest, res:Response) => {
+    const {pid}= req.params
+    if(!req.file) return res.status(404).json("missing inputs")
+    const response = await blogModel.findByIdAndUpdate(pid,{image:req.file},{new: true});
+    return res.status(200).json({
+      success: response ? true : false,
+      uploadImageBlog: response ? response : "can not image blog"
+    })
+  }
 
 };
 

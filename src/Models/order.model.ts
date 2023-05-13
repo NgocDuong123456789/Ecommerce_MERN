@@ -11,7 +11,8 @@ export interface ordergoryDocument extends mongoose.Document {
   products: productOrderType[];
   status: string;
   orderBy: mongoose.Schema.Types.ObjectId;
-  payment: {};
+  total: number;
+  compon:mongoose.Schema.Types.ObjectId;
 }
 
 const orderSchema: Schema<ordergoryDocument> = new mongoose.Schema(
@@ -28,7 +29,10 @@ const orderSchema: Schema<ordergoryDocument> = new mongoose.Schema(
       default: "Processing",
       enum: ["Cancelled", "Processing", "Successed"],
     },
-    payment: {},
+   total:Number,
+   compon:{
+    type: mongoose.Schema.Types.ObjectId,ref:'Coupon'
+   },
     orderBy: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
   },
 

@@ -18,6 +18,7 @@ export interface ProductDocument extends mongoose.Document {
   color: string;
   ratings: rating[];
   totalRangtings: number;
+  image:string
 }
 const productSchema: Schema<ProductDocument> = new mongoose.Schema(
   {
@@ -61,6 +62,7 @@ const productSchema: Schema<ProductDocument> = new mongoose.Schema(
       type: [],
       default: [],
     },
+    image:{type:String },
     color: {
       type: String,
       enum: ["black", "Grown", "Red"],

@@ -3,7 +3,8 @@ import { productController } from "../Controller/ProductController";
 import express from "express";
 const  uploadCloud  = require("../config/Cloudinary")
 const router = express.Router();
-router.put("/uploadimage/:id",[requiredSignIn, isAdmin],uploadCloud.single('images'),productController.uploadImageProduct)
+// 10 là số ảnh được upload tối đa
+router.put("/uploadimage/:pid",[requiredSignIn, isAdmin],uploadCloud.array('images',10),productController.uploadImageProduct)
 router.put("/ratings", requiredSignIn, productController.ratings);
 router.post("/", [requiredSignIn, isAdmin], productController.createProduct);
 router.get("/", productController.getAllProduct);
@@ -13,6 +14,7 @@ router.delete(
   [isAdmin, requiredSignIn],
   productController.deleteProduct
 );
+
 router.put("/:_id", [isAdmin, requiredSignIn], productController.updateProduct);
 
 export default router;

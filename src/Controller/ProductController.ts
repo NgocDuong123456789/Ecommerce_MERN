@@ -11,6 +11,9 @@ interface softQuery {
 interface AuthenticatedRequest extends Request {
   user?: any;
 }
+interface MyRequest extends Request {
+  files: any; // Define the type of the file property
+}
 export const productController = {
   createProduct: async (req: Request, res: Response, next: NextFunction) => {
     if (Object.keys(req.body).length === 0)
@@ -144,6 +147,7 @@ export const productController = {
             },
           },
         },
+        
         {
           $set: {
             "ratings.$.star": star,
@@ -176,7 +180,28 @@ export const productController = {
     });
   },
 
-  uploadImageProduct: async (req:Request, res:Response) => {
-    return res.json("ok")
-  }
+  uploadImageProduct: async (req: MyRequest, res: Response) => {
+    const { pid } = req.params;
+    if (!req.files) return res.status(403).json("Missing inputs");
+    const response = await productModel.findByIdAndUpdate(
+      pid,
+      {
+        $push: {
+          images:{
+            $each: 
+              req.files.map(
+                (file: { path: string }, index: number) => file.path
+              ),
+            
+          }
+         
+        },
+      },
+      { new: true }
+    );
+    return res.json({
+      success: response ? true : false,
+      uploadImgproduct: response ? response :"can not image product"
+    });
+  },
 };
