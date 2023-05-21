@@ -4,8 +4,8 @@ import { comparePassword, hashPassword } from "../helper/hashPassword";
 import { signJWT } from "../helper/JWT";
 import JWT from "jsonwebtoken";
 import CryptoJS from "crypto";
-import productModel from "../Models/Product.model";
 import sendMail from "../helper/saveMail";
+import makeToke from "uniqid";
 interface AuthenticatedRequest extends Request {
   user?: any;
 }
@@ -15,32 +15,39 @@ export const authController = {
     try {
       const { name, email, password, phone } = req.body;
       // validations
+
       if (!name) return res.status(422).send({ name: "name is Required" });
       if (!email) return res.status(422).send({ email: "email is Required" });
       if (!password)
         return res.status(422).send({ password: "password is Required" });
       if (!phone) return res.status(422).send({ phone: "phone is Required" });
-      // if (!address)
-      //   return res.status(422).send({ address: "address is Required" });
-      // existing user ;
-
       const exisitingUser = await userModel.findOne({ email });
       if (exisitingUser)
         return res.status(422).send({ email: "email đã tồn tại" });
-      const hash = await hashPassword(password);
-      // save
-      const user = await new userModel({
-        name,
-        email,
-        password: hash,
-        phone,
-      }).save();
-      return res.status(200).send({
-        message: "User Register Successfully",
-        data: {
-          user: user,
-        },
-      });
+      else {
+        const token = makeToke();
+
+        const newUser = await userModel.create({
+          email,
+          phone,
+          password,
+          name,
+        });
+        const html = `<h2>mã xác thực</h2><br/><blockquote>${token}</blockquote>`;
+        const data = {
+          email: email as string,
+          html,
+          subject: "Xác thực đăng ký",
+        };
+
+        const rs = await sendMail(data);
+        return res.status(200).send({
+          message: "User Register Successfully",
+          data: {
+            rs,
+          },
+        });
+      }
     } catch (error) {
       console.log(error);
       res.status(500).send({
@@ -49,6 +56,22 @@ export const authController = {
         error,
       });
     }
+  },
+
+  finallyRegister: async (req: Request, res: Response) => {
+    const cookie = req.cookies;
+    const { token } = req.params;
+
+    if (!cookie || cookie?.dataRegister?.token !== token)
+      return res.json("register failed");
+    const newUser = await userModel.create({
+      email: cookie?.dataRegister.email,
+      password: cookie?.dataRegister.password,
+      phone: cookie?.dataRegister.phone,
+      name: cookie?.dataRegister.name,
+    });
+    if (newUser) return res.json("xác thực thành công");
+    else return res.json("register failed");
   },
   login: async (req: Request, res: Response) => {
     try {
@@ -87,6 +110,7 @@ export const authController = {
         sameSite: "strict",
         path: "/",
       });
+
       const { password, role, refreshToken, ...userData } = user.toObject();
       return res.status(200).json({
         message: "login successfully",
@@ -121,8 +145,9 @@ export const authController = {
           _id: user._id,
           refreshToken: refresh_token,
         });
+
         const newAccess_Token = signJWT(
-          { _id: response._id },
+          { _id: response._id, role: response.role },
           process.env.JWT_ACCESS_TOKEN,
           { expiresIn: "30d" }
         );
@@ -140,7 +165,6 @@ export const authController = {
         });
         return res.status(200).json({
           access_token: newAccess_Token,
-          refresh_token: newRefresh_token,
         });
       }
     );
@@ -166,7 +190,6 @@ export const authController = {
   },
 
   // change passwork hoặc reset
-
   // client giửi email
   // server check email có hợp lệ k => giửi email + kèm theo link (password change token)
   // client check mail -> click link
@@ -175,18 +198,18 @@ export const authController = {
   // nếu giống thì change
 
   forgotPassword: async (req: Request, res: Response) => {
-    const { email } = req.query;
+    const { email } = req.body;
     if (!email) return res.json("Messing email");
     const user = await userModel.findOne({ email });
-    if (!user) return res.status(403).json({ email: "email not found" });
+    if (!user) return res.status(422).json({ email: "email not found" });
     const resetToken = user.createPasswordChangeToken();
     await user.save();
-    //  gửi mail
-    // đoạn text muốn giửi
-    const html = `Xin vui lòng click vào link dưới đây để  thay đổi mật khẩu của bạn.Link này sẽ hết hạn sau 15 phút kể từ bây giờ <a href=${process.env.URL_SERVER}/api/user/reset-password/${resetToken}>toang</a>`;
+   
+    const html = `Xin vui lòng click vào link dưới đây để  thay đổi mật khẩu của bạn.Link này sẽ hết hạn sau 15 phút kể từ bây giờ <a href=${process.env.URL_CLIENT}reset-password/${resetToken}>toang</a>`;
     const data = {
       email: email as string,
       html,
+      subject: "forgot password",
     };
     const rs = await sendMail(data);
     return res.status(200).json({
@@ -196,11 +219,12 @@ export const authController = {
   },
 
   resetPassword: async (req: Request, res: Response) => {
-    const { token, password } = req.body;
-    if (!password || !token)
-      return res.status(403).json("không có password và token");
+    const { resetToken, password } = req.body;
+
+    if (!resetToken) return res.status(403).json("không có resettoken");
+    if (!password) return res.status(403).json("không có password");
     const passwordResetToken = CryptoJS.createHash("sha256")
-      .update(token)
+      .update(resetToken)
       .digest("hex");
     const user = await userModel.findOne({
       passwordResetToken: passwordResetToken,
@@ -233,6 +257,7 @@ export const authController = {
       console.log(err);
     }
   },
+
   getAllUser: async (req: Request, res: Response) => {
     const response = await userModel
       .find({})
@@ -242,6 +267,7 @@ export const authController = {
       user: response,
     });
   },
+
   deleteUser: async (req: Request, res: Response) => {
     const { _id } = req.params;
     if (!_id) return res.json("Missing inputs");
@@ -279,6 +305,7 @@ export const authController = {
       user: response,
     });
   },
+
   updateAddressUser: async (req: AuthenticatedRequest, res: Response) => {
     const { _id } = req.user;
     if (!req.body.address) return res.json("Missing input");
@@ -309,6 +336,7 @@ export const authController = {
     const readlyProduct = cart?.cart?.filter(
       (el) => el?.product?.toString() === pid
     );
+
     const realy = readlyProduct.find((product) => product.color === color);
     if (readlyProduct.length !== 0) {
       if (realy) {
@@ -316,15 +344,11 @@ export const authController = {
           {
             cart: {
               $elemMatch: { product: pid, color: color },
-              // điều kiện này phải tương ứng trường có trong database thì mới update đ
-             },
+            },
           },
-          {$set: {"cart.$.quantity": quantity,},
-          },
+          { $set: { "cart.$.quantity": quantity } },
           { new: true }
         );
-
-        console.log(response);
 
         return res.status(200).json({
           success: response ? true : false,

@@ -1,7 +1,5 @@
 import nodemailer from 'nodemailer';
-
-
-const sendMail= async({email,html}:{email: string , html: string })=>{
+const sendMail= async({email,html, subject}:{email: string , html: string, subject: string})=>{
     // người giửi
     let transporter= nodemailer.createTransport({
         host: "smtp.ethereal.email",
@@ -20,7 +18,7 @@ const sendMail= async({email,html}:{email: string , html: string })=>{
       let info = await transporter.sendMail({
         from: '"Cuahangdientu" <foo@example.com>', // sender address
         to: email,// list of receivers
-        subject: "forgot password", // Subject line
+        subject: subject, // Subject line
         text: "Hello world?", // plain text body
         html:html, // html body
       });

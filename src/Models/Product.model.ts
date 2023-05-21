@@ -8,14 +8,14 @@ interface rating {
 export interface ProductDocument extends mongoose.Document {
   title: string;
   slug: string;
-  description: string;
+  description: [];
   brand: string;
   price: number;
-  category: mongoose.Schema.Types.ObjectId;
+  category: string;
   quantity: Number;
   sold: Number;
   images: [];
-  color: string;
+  color: []
   ratings: rating[];
   totalRangtings: number;
   image:string
@@ -27,15 +27,15 @@ const productSchema: Schema<ProductDocument> = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    //
+    
     slug: {
       type: String,
       required: true,
-      unique: true,
+      // unique: true,
       lowercase: true,
     },
     description: {
-      type: String,
+      type: [],
       required: true,
     },
     brand: {
@@ -47,8 +47,8 @@ const productSchema: Schema<ProductDocument> = new mongoose.Schema(
       required: true,
     },
     category: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
+      type: String,
+      required: true,
     },
     quantity: {
       type: Number,
@@ -64,8 +64,8 @@ const productSchema: Schema<ProductDocument> = new mongoose.Schema(
     },
     image:{type:String },
     color: {
-      type: String,
-      enum: ["black", "Grown", "Red"],
+      type: [],
+      required: true
     },
     ratings: [
       {

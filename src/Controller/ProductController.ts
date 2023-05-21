@@ -1,6 +1,5 @@
 import productModel from "../Models/Product.model";
 import slugify from "slugify";
-import flatted from "flatted";
 import { Request, Response, NextFunction } from "express";
 interface FilteredQuery {
   [key: string]: any;
@@ -42,7 +41,7 @@ export const productController = {
     try {
       const queries = { ...req.query };
       // tách các trường đặt biệt ra khỏi query
-      const excludeFields = ["limit", "sort", "page", "fields", "order"];
+      const excludeFields = ["limit", "sort", "page", "fields", "order_by"];
       excludeFields.forEach((e1) => delete queries[e1]);
 
       const filterQuery: FilteredQuery = {};
@@ -67,10 +66,10 @@ export const productController = {
       }
       let data = productModel.find(filterQuery);
       const softQuery: softQuery = {};
-      if (req.query.sort && req.query.order) {
+      if (req.query.sort && req.query.order_by) {
         const sortFields = req.query.sort.toString().split(",").join(" ");
         const sortDirection =
-          req.query.order.toString().split(",").join(" ") === "desc" ? -1 : 1;
+          req.query.order_by.toString().split(",").join(" ") === "desc" ? -1 : 1;
         softQuery[sortFields] = sortDirection;
         data = data.sort(softQuery);
       }
@@ -123,6 +122,7 @@ export const productController = {
       message: "delete product successfully",
     });
   },
+  
   ratings: async (req: AuthenticatedRequest, res: Response) => {
     const { _id } = req.user;
 

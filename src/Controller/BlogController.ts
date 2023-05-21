@@ -4,6 +4,7 @@ interface AuthenticatedRequest extends Request {
   user?: any;
 }
 
+
 interface fileRequest extends Request {
   file?:any
 }
@@ -54,6 +55,7 @@ const BlogController = {
   //+ nếu có disklink thì bỏ disklink
   // + nếu k disklink check tiếp ,nếu trước đó người đó like thì bỏ like
   // nếu chưa like thì like
+
   likeBlog: async (req: AuthenticatedRequest, res: Response) => {
     const { _id } = req.user;
     const { bid } = req.params;
@@ -155,6 +157,7 @@ const BlogController = {
       blog,
     });
   },
+
   uploadImageBlog:async(req:fileRequest, res:Response) => {
     const {pid}= req.params
     if(!req.file) return res.status(404).json("missing inputs")

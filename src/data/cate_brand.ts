@@ -1,0 +1,34 @@
+ export const productCategory =[
+    {
+        cate:'Smartphone',
+        brand:['Apple','Samsung','LG','Asus','Nokia','BlackBerry']
+    },
+    {
+        cate:'Tablet',
+        brand:['IPad','Samsung','LG','Asus','Nokia','BlackBerry']
+    },
+    {
+        cate:'Laptop',
+        brand:['Apple','Samsung','LG','Asus','Nokia','BlackBerry']
+    },
+    {
+        cate:'Accessories',
+        brand:['Apple','Samsung','LG','Asus','Nokia','BlackBerry']
+    },
+    {
+        cate:'Televison',
+        brand:['Apple','Samsung','LG','Asus','Nokia','BlackBerry']
+    },
+    {
+        cate:'Printer',
+        brand:['Apple','Samsung','LG','Asus','Nokia','BlackBerry']
+    },
+    {
+        cate:'Speaker',
+        brand:[],
+
+    },{
+        cate:'Camera',
+        brand:[],
+    }
+]

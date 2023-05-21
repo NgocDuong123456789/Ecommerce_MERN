@@ -1,32 +1,33 @@
-import { Request, Response, NextFunction } from "express";
-import BlogModel from "../Models/blogcategory.model";
+import { Request, Response } from "express";
+import productCategoryModel from "../Models/productCategory.model";
 
 const BlogController = {
   createBlog: async (req: Request, res: Response) => {
-    const category =await BlogModel.create(req.body);
+    const category =await productCategoryModel.create(req.body);
     return res
       .status(200)
-     
       .json({
         success: category ? true : false,
         createdBlog: category
           ? category
           : "Can not create blog",
-
       });
   },
+  
   getBlog:async(req: Request, res: Response)=>{
-    const getAllBlog=await BlogModel.find({})
+    const getAllBlog=await productCategoryModel.find({})
     return res.status(200).json({
-        success: getAllBlog ? true : false,
-        getBlog: getAllBlog
+        message: getAllBlog ?'lấy sản phẩm trong category thành công !' : 'lấy sản phẩm trong category thất bại',
+        data:
+          getAllBlog
           ? getAllBlog
           : "Can not  get All blog",
     })
   },
+
   updateBlog:async(req: Request, res: Response)=>{
     const {_id}=req.params;
-    const updateBlog=await BlogModel.findByIdAndUpdate(_id,req.body,{new: true})
+    const updateBlog=await productCategoryModel.findByIdAndUpdate(_id,req.body,{new: true})
     return res.status(200).json({
         success: updateBlog ? true : false,
         updatedBlog: updateBlog
@@ -34,9 +35,10 @@ const BlogController = {
           : "Can not update blog",
     })
   },
+  
    deleteBlog:async(req: Request, res: Response)=>{
     const {_id}=req.params;
-    const deleteBlog=await BlogModel.findByIdAndDelete(_id)
+    const deleteBlog=await productCategoryModel.findByIdAndDelete(_id)
     return res.status(200).json({
         success: deleteBlog ? true : false,
         deletedBlog: deleteBlog

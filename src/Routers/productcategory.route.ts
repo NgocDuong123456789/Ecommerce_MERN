@@ -1,5 +1,5 @@
 import { isAdmin, requiredSignIn } from "../middleware/authMiddleware";
-import  blogController  from "../Controller/BlogcategoryController";
+import  blogController  from "../Controller/ProductcategoryController";
 import express from "express";
 
 const router = express.Router();

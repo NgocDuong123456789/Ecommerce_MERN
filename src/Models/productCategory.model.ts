@@ -1,20 +1,21 @@
 import mongoose, { Schema, Model } from "mongoose";
-import bcrypt from "bcrypt";
-import CryptoJS from "crypto";
 export interface blogcategoryDocument extends mongoose.Document {
   title: string;
+  brand:[]
 }
+
 
 const blogCategorySchema: Schema<blogcategoryDocument> = new mongoose.Schema(
   {
     title: { type: String, required: true, unique: true, index: true },
+    brand:{type:[], required: true}
   },
   
   {
     timestamps: true,
-    collection: "BlogCategory",
+    collection: "productCategory",
   }
 );
 
-const BlogModel: Model<blogcategoryDocument> = mongoose.model("BlogCategory", blogCategorySchema);
-export default BlogModel;
+const productCategoryModel: Model<blogcategoryDocument> = mongoose.model("productCategory", blogCategorySchema);
+export default productCategoryModel;

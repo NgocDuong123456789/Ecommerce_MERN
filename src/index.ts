@@ -10,7 +10,9 @@ const app = express()
 app.use(cookieParser())
 app.use(cors({
     methods:["GET","POST","DELETE","PATCH","PUT"],
-    allowedHeaders:["Content-Type", "Authorization"]
+   origin: 'http://127.0.0.1:3000',
+   credentials: true
+   
 }))
 app.use(compression())
 app.use(express.json()); // lấy dữ liệu theo json
